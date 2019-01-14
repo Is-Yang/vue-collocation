@@ -23,29 +23,32 @@
 
     <yd-tab class="product-body" :callback="fn" :prevent-default="false" :item-click="itemClick">
       <yd-tab-panel v-for="(prodcut, index) in productItems" :label="prodcut.label" :key="prodcut.id" :tabkey="index">
-        <div class="product-info">
-          <p>{{prodcut.title}}</p>
-          <span class="price">￥{{prodcut.price}}</span>
-        </div>
-
-        <div class="product-series">
-          <div v-for="series in prodcut.seriesList" :label="series.label" :key="series.seriesId" style="margin-bottom: 15px;">
-            <h3>{{series.label}}</h3>
-            <div>
-              <span class="seriesItem" v-for="item in series.item" @click="clickItem(prodcut.form, item.img)" :key="item.itemId">{{item.label}}</span>
-            </div>
+        <div class="tab-wrapper">
+          <div class="product-info">
+            <p>{{prodcut.title}}</p>
+            <span class="price">￥{{prodcut.price}}</span>
           </div>
-          
-          <!-- <yd-tab>
-              <yd-tab-panel v-for="series in prodcut.seriesList" :label="series.label" :key="series.seriesId">
+
+          <div class="product-series">
+            <div v-for="series in prodcut.seriesList" :label="series.label" :key="series.seriesId" style="margin-bottom: 10px;">
+              <h3>{{series.label}}</h3>
+              <div>
                 <span class="seriesItem" v-for="item in series.item" @click="clickItem(prodcut.form, item.img)" :key="item.itemId">{{item.label}}</span>
-              </yd-tab-panel>
-          </yd-tab> -->
+              </div>
+            </div>
+            
+            <!-- <yd-tab>
+                <yd-tab-panel v-for="series in prodcut.seriesList" :label="series.label" :key="series.seriesId">
+                  <span class="seriesItem" v-for="item in series.item" @click="clickItem(prodcut.form, item.img)" :key="item.itemId">{{item.label}}</span>
+                </yd-tab-panel>
+            </yd-tab> -->
+          </div>
         </div>
       </yd-tab-panel>
     </yd-tab>
-    <div class="footer-btn" v-if="isOk">
-      <yd-button size="large" type="danger" @click.native="submit()">加入购物车</yd-button>
+    <div class="footer-btn">
+      <yd-button size="large" :type="flag ? 'warning' : 'disabled'" @click.native="next()">下一步</yd-button>
+      <yd-button v-if="isOk" size="large" type="danger" @click.native="submit()">加入购物车</yd-button>
     </div>
 
     <a href="javascirpt:;" class="go-top" :style="{display: isDisplay}" @click="goTop()"></a>
@@ -205,9 +208,7 @@
       window.addEventListener('scroll', this.handleScroll, true);
     },
     created() {
-      setTimeout(() => {
-        this.handleResize();
-      }, 1000);
+      this.handleResize();
     },
     methods: {
       clickItem(form, img) {
@@ -236,11 +237,15 @@
       handleResize() {
         let showProduct = document.getElementsByClassName("show-product")[0];
         let bodyProduct = document.getElementsByClassName("product-body")[0];
+        let tabWrapper = document.getElementsByClassName("tab-wrapper")[0];
+        let height =  document.documentElement.clientHeight || document.body.clientHeight;
+        let footerBtn = document.getElementsByClassName("footer-btn")[0];
         if (showProduct) {
-          let width = showProduct.clientWidth + 'px';
-          showProduct.style.height = width;
-          // bodyProduct.style.marginTop = width;
+          let width = showProduct.clientWidth;
+          showProduct.style.height = width + 'px';
+          bodyProduct.style.marginTop = width + 5  + 'px';
 
+          tabWrapper.style.height = height - width - footerBtn.clientHeight - 40 + 'px';
         }
       },
       handleScroll() {
@@ -259,12 +264,15 @@
 </script>
 
 <style lang="less">
+  body {
+    overflow: hidden;
+  }
   .product-container {
     .show-product {
-      // position: fixed;
-      // top: 0;
-      // left: 0;
-      // right: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 375px;
 
       &>div {
@@ -283,7 +291,15 @@
             padding: 0;
 
             img {
-              width: 100%;
+              position: absolute;
+              left: 50%;
+              top: 50%;
+              -webkit-transform: translate3d(-50%,-50%,0);
+              transform: translate3d(-50%,-50%,0);
+              max-width: 100%;
+              max-height: 100%;
+              line-height: 100%;
+              visibility: middle;
             }
           }
         }
@@ -291,7 +307,7 @@
     }
 
     .product-body {
-      margin-top: 10px;
+      margin-top: 380px;
       margin-bottom: 50px;
 
       .product-info {
@@ -310,12 +326,17 @@
       }
     }
 
+    .tab-wrapper {
+      height: 200px;
+      overflow-y: auto;
+    }
+
     .product-series {
-      padding: 15px 10px;
+      padding: 10px;
 
       .seriesItem {
         display: inline-block;
-        margin: 10px 12px 15px 0;
+        margin: 10px 10px 12px 0;
         padding: 5px 10px;
         border: 1px solid #c9c9c9;
         border-radius: 4px;
@@ -346,6 +367,7 @@
       &>button {
         flex: 1;
         border-radius: 0;
+        margin: 0;
       }
     }
   }
