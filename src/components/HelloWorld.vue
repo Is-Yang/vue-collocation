@@ -28,7 +28,7 @@
           <yd-cell-item arrow type="label" @click.native="choosePopup=true">
             <span slot="left">选择产品规格</span>
           </yd-cell-item>
-          <yd-step>
+          <yd-step :current="currentStep">
             <yd-step-item v-for="item in productItems" :key="item.label">
               <span slot="bottom">{{item.label}}</span>
             </yd-step-item>
@@ -45,25 +45,6 @@
           </div>
         </div>
       </yd-cell-group>
-
-
-      <!-- <yd-tab-panel v-for="(prodcut, index) in productItems" :label="prodcut.label" :key="prodcut.id" :tabkey="index">
-          <div class="tab-wrapper">
-            <div class="product-info">
-              <p>{{prodcut.title}}</p>
-              <span class="price">￥{{prodcut.price}}</span>
-            </div>
-
-            <div class="product-label">
-              <div v-for="series in prodcut.seriesList" :label="series.label" :key="series.seriesId" style="margin-bottom: 10px;">
-                <h3>{{series.label}}</h3>
-                <div>
-                  <span class="labelItem" v-for="item in series.item" @click="clickItem(prodcut.form, item.img)" :key="item.itemId">{{item.label}}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </yd-tab-panel> -->
     </div>
 
     <yd-popup v-model="choosePopup" position="bottom" height="60%">
@@ -81,7 +62,11 @@
           <div class="mt-10" v-for="series in productItems[currentIndex].seriesList" :key="series.seriesId">
             <h3>{{series.label}}</h3>
             <div>
-              <span class="labelItem" v-for="item in series.item" :key="item.itemId" @click="clickItem(productItems[currentIndex].form, item)">{{item.label}}</span>
+              <span class="labelItem" 
+                v-for="item in series.item" 
+                :key="item.itemId" 
+                @click="clickItem(productItems[currentIndex].form, item)"
+                :class="{'active': item.itemId == activeLabel}">{{item.label}}</span>
             </div>
           </div>
 
@@ -89,7 +74,11 @@
           <div class="mt-10">
             <h3>颜色</h3>
             <div>
-              <span class="labelItem" v-for="(color, index) in colorList" :key="index">{{color}}</span>
+              <span class="labelItem" 
+                v-for="(color, index) in colorList" 
+                :key="index"
+                @click="clickColor(color)"
+                :class="{'active': color == activeColor}">{{color}}</span>
             </div>
           </div>
 
@@ -97,16 +86,20 @@
           <div class="mt-10">
             <h3>尺码</h3>
             <div>
-              <span class="labelItem" v-for="(size, index) in sizeList" :key="index">{{size}}</span>
+              <span class="labelItem" 
+                v-for="(size, index) in sizeList" 
+                :key="index"
+                @click="clickSize(size)"
+                :class="{'active': size == activeSize}">{{size}}</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="popup-foot">
-        <yd-button v-if="flag != 'A' && flag != ''" size="large" type="hollow" @click.native="prev(flag)">上一步</yd-button>
-        <yd-button size="large" :type="flag ? 'hollow' : 'disabled'" @click.native="next(flag)">下一步</yd-button>
-        <yd-button size="large" type="danger" @click.native="submit()">加入购物车</yd-button>
+        <yd-button v-if="flag != 'A' && flag != ''" size="large" type="hollow" @click.native="from('prev', flag)">上一步</yd-button>
+        <yd-button v-if="flag != 'D'" size="large" :type="flag ? 'hollow' : 'disabled'" @click.native="from('next', flag)">下一步</yd-button>
+        <yd-button v-if="flag == 'C' || flag == 'D'" size="large" type="danger" @click.native="submit()">加入购物车</yd-button>
       </div>
     </yd-popup>
 
@@ -149,7 +142,8 @@
           c: "/static/image/c.png",
           d: "/static/image/d.png"
         },
-        productItems: [{
+        productItems: [
+          {
             id: 1, // 产品ID
             form: 'A', // 产品标识A/B/C/D
             label: 'A产品', // 产品标签
@@ -160,28 +154,28 @@
               item: [{ // 产品系列下的信息
                 itemId: 111,
                 label: 'A1',
-                img: 'https://g-search3.alicdn.com/img/bao/uploaded/i4/i2/196993935/O1CN01k0SOrv1ewH0HGaQUT_!!0-item_pic.jpg_250x250.jpg_.webp',
+                img: '/static/image/test/c1.jpg',
                 price: 120,
                 colors: ['红色', '蓝色', '紫色', '粉色'],
                 sizes: ['21', '22', '34', '43']
               }, {
                 itemId: 112,
                 label: 'A1',
-                img: 'https://g-search3.alicdn.com/img/bao/uploaded/i4/i4/3477411085/TB2vYUDaPDpK1RjSZFrXXa78VXa_!!3477411085-0-item_pic.jpg_250x250.jpg_.webp',
+                img: '/static/image/test/b2.jpg',
                 price: 122,
                 colors: ['绿色', '蓝色', '紫色', '粉色'],
                 sizes: ['21', '22', '34', '43']
               }, {
                 itemId: 113,
                 label: 'A1',
-                img: 'https://g-search1.alicdn.com/img/bao/uploaded/i4/i4/673750156/O1CN011D1UFQPuFsKDnFH_!!673750156-0-item_pic.jpg_250x250.jpg_.webp',
+                img: '/static/image/test/b1.jpg',
                 price: 123,
                 colors: ['粉色', '蓝色', '紫色', '粉色'],
                 sizes: ['11', '22', '14', '43']
               }, {
                 itemId: 114,
                 label: 'A1',
-                img: 'https://g-search3.alicdn.com/img/bao/uploaded/i4/i1/2576722561/O1CN011Umync55ulgyk2V_!!0-item_pic.jpg_250x250.jpg_.webp',
+                img: '/static/image/test/b4.jpg',
                 price: 125,
                 colors: ['粉色', '蓝色', '紫色', '粉色'],
                 sizes: ['11', '22', '14', '43']
@@ -192,28 +186,28 @@
               item: [{
                 itemId: 121,
                 label: 'A1',
-                img: 'https://g-search3.alicdn.com/img/bao/uploaded/i4/i1/2576722561/O1CN011Umync55ulgyk2V_!!0-item_pic.jpg_250x250.jpg_.webp',
+                img: '/static/image/test/c1.jpg',
                 price: 120,
                 colors: ['红色', '蓝色', '紫色', '粉色'],
                 sizes: ['21', '22', '34', '43']
               }, {
                 itemId: 122,
                 label: 'A1',
-                img: 'https://g-search3.alicdn.com/img/bao/uploaded/i4/i1/2576722561/O1CN011Umync55ulgyk2V_!!0-item_pic.jpg_250x250.jpg_.webp',
+                img: '/static/image/test/c4.jpg',
                 price: 121,
                 colors: ['绿色', '蓝色', '紫色', '粉色'],
                 sizes: ['21', '22', '34', '43']
               }, {
                 itemId: 123,
                 label: 'A1',
-                img: 'https://g-search3.alicdn.com/img/bao/uploaded/i4/i1/2576722561/O1CN011Umync55ulgyk2V_!!0-item_pic.jpg_250x250.jpg_.webp',
+                img: '/static/image/test/a2.jpg',
                 price: 122,
                 colors: ['红色', '灰色', '紫色', '粉色'],
                 sizes: ['21', '62', '34', '44']
               }, {
                 itemId: 124,
                 label: 'A1',
-                img: 'https://g-search3.alicdn.com/img/bao/uploaded/i4/i1/2576722561/O1CN011Umync55ulgyk2V_!!0-item_pic.jpg_250x250.jpg_.webp',
+                img: '/static/image/test/a1.jpg',
                 price: 123,
                 colors: ['粉色', '蓝色', '紫色', '粉色'],
                 sizes: ['11', '22', '14', '43']
@@ -223,16 +217,32 @@
               label: 'A-青春系列',
               item: [{
                 itemId: 131,
-                label: 'A3'
+                label: 'A3',
+                img: '/static/image/test/d4.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
               }, {
                 itemId: 132,
-                label: 'A3'
+                label: 'A3',
+                img: '/static/image/test/d3.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
               }, {
                 itemId: 133,
-                label: 'A3'
+                label: 'A3',
+                img: '/static/image/test/d2.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
               }, {
                 itemId: 134,
-                label: 'A3'
+                label: 'A3',
+                img: '/static/image/test/d1.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
               }]
             }]
           },
@@ -244,13 +254,68 @@
             price: 140,
             seriesList: [{
               seriesId: 21,
-              label: 'B-可爱系列'
+              label: 'B-可爱系列',
+              item: [{
+                itemId: 211,
+                label: 'A3',
+                img: '/static/image/test/c4.jpg',
+                price: 211,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 212,
+                label: 'A3',
+                img: '/static/image/test/c3.jpg',
+                price: 213,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 213,
+                label: 'A3',
+                img: '/static/image/test/c2.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 214,
+                label: 'A3',
+                img: '/static/image/test/c1.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }]
             }, {
               seriesId: 22,
-              label: 'B-OL系列'
-            }, {
-              seriesId: 23,
-              label: 'B-校园系列'
+              label: 'B-OL系列',
+              item: [{
+                itemId: 221,
+                label: 'A3',
+                img: '/static/image/test/b4.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 222,
+                label: 'A3',
+                img: '/static/image/test/b1.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 223,
+                label: 'A3',
+                img: '/static/image/test/a2.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 224,
+                label: 'A3',
+                img: '/static/image/test/a1.jpg',
+                price: 224,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }]
             }]
           },
           {
@@ -261,10 +326,36 @@
             price: 180,
             seriesList: [{
               seriesId: 34,
-              label: 'B-可爱系列'
-            }, {
-              seriesId: 35,
-              label: 'B-OL系列'
+              label: 'B-可爱系列',
+              item: [{
+                itemId: 341,
+                label: 'A3',
+                img: '/static/image/test/b4.jpg',
+                price: 333,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 342,
+                label: 'A3',
+                img: '/static/image/test/b3.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 343,
+                label: 'A3',
+                img: '/static/image/test/c2.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 344,
+                label: 'A3',
+                img: '/static/image/test/c1.jpg',
+                price: 443,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }]
             }, {
               seriesId: 36,
               label: 'B-校园系列'
@@ -277,23 +368,76 @@
             title: 'DDD产品描述xxxxx',
             price: 200,
             seriesList: [{
-              seriesId: 41,
-              label: 'D-可爱系列'
-            }, {
               seriesId: 42,
-              label: 'D-OL系列'
+              label: 'D-OL系列',
+              item: [{
+                itemId: 421,
+                label: 'A3',
+                img: '/static/image/test/c2.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 422,
+                label: 'A3',
+                img: '/static/image/test/a2.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 423,
+                label: 'A3',
+                img: '/static/image/test/d2.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 424,
+                label: 'A3',
+                img: '/static/image/test/b2.jpg',
+                price: 123,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }]
             }, {
               seriesId: 43,
-              label: 'D-校园系列'
+              label: 'D-校园系列',
+              item: [{
+                itemId: 431,
+                label: 'A3',
+                img: '/static/image/test/c1.jpg',
+                price: 1000,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 432,
+                label: 'A3',
+                img: '/static/image/test/a1.jpg',
+                price: 1000,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 433,
+                label: 'A3',
+                img: '/static/image/test/b1.jpg',
+                price: 1000,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }, {
+                itemId: 434,
+                label: 'A3',
+                img: '/static/image/test/d1.jpg',
+                price: 342,
+                colors: ['粉色', '蓝色', '紫色', '粉色'],
+                sizes: ['11', '22', '14', '43']
+              }]
             }]
           }
         ],
         imgDetails: [
           'https://imageysc.kuaidiantong.cn/Storage/master/gallery/20170626/6363408724866585997873066.jpg',
           'https://imageysc.kuaidiantong.cn/Storage/master/gallery/20170626/6363408724871272483858974.jpg',
-          'https://imageysc.kuaidiantong.cn/Storage/master/gallery/20170626/6363408724879089421601545.jpg',
-          'https://imageysc.kuaidiantong.cn/Storage/master/gallery/20170626/6363408724882222923358207.jpg',
-          'https://imageysc.kuaidiantong.cn/Storage/master/gallery/20170626/6363408724893147087559268.jpg'
+          'https://imageysc.kuaidiantong.cn/Storage/master/gallery/20170626/6363408724879089421601545.jpg'
         ],
         flag: '',
         isOk: false,
@@ -301,6 +445,10 @@
         isDisplay: 'none',
         currentIndex: 0,
         currentPrice: 0,
+        currentStep: 0,
+        activeLabel: 0,
+        activeColor: '',
+        activeSize: '',
         colorList: [],
         sizeList: []
       }
@@ -315,14 +463,15 @@
       }, 100);
     },
     methods: {
-      prev(flag) { // 上一步
+      from(come, flag) {
         this.$dialog.loading.open('正在加载');
-        this.currentIndex = flag === 'B' ? 0 : flag === 'C' ? 1 : flag === 'D' ? 2 : 3;
-        this.$dialog.loading.close();
-      },
-      next(flag) { // 下一步
-        this.$dialog.loading.open('正在加载');
-        this.currentIndex = flag === 'A' ? 1 : flag === 'B' ? 2 : flag === 'C' ? 3 : 0;
+        if (come == 'prev') {  // 上一步
+          this.currentIndex = flag === 'B' ? 0 : flag === 'C' ? 1 : flag === 'D' ? 2 : 3;
+        } else {  // 下一步
+          this.currentIndex = flag === 'A' ? 1 : flag === 'B' ? 2 : flag === 'C' ? 3 : 0;
+        }
+        this.flag = this.currentIndex === 0 ? 'A' : this.currentIndex === 1 ? 'B' : this.currentIndex === 2 ? 'C' : 'D'; 
+        this.currentStep = this.currentIndex;
         this.$dialog.loading.close();
       },
       clickItem(form, item) {
@@ -338,7 +487,16 @@
         this.currentPrice = item.price;
         this.colorList = item.colors;
         this.sizeList = item.sizes;
+        this.activeLabel = item.itemId;
         this.flag = form;
+      },
+      clickColor(color) {
+        this.activeColor = color;
+        console.log(color);
+      },
+      clickSize(size) {
+        this.activeSize = size;
+        console.log(size);
       },
       fn(label, key) {
         if (key === 2 || key === 3) {
@@ -383,7 +541,7 @@
       },
       submit() {
         this.$dialog.toast({
-          mes: '请选择A，B，C产品',
+          mes: '提交',
           timeout: 1000
         });
       }
@@ -545,6 +703,10 @@
         border: 1px solid #c9c9c9;
         border-radius: 4px;
         text-align: center;
+        &.active {
+          color: #ef4f4f;
+          border: 1px solid #ef4f4f;
+        }
       }
 
     }
