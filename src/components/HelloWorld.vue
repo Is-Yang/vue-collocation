@@ -98,7 +98,7 @@
 
       <div class="popup-foot">
         <yd-button v-if="flag != 'A' && flag != ''" size="large" type="hollow" @click.native="from('prev', flag)">上一步</yd-button>
-        <yd-button v-if="flag != 'D'" size="large" :type="flag ? 'hollow' : 'disabled'" @click.native="from('next', flag)">下一步</yd-button>
+        <yd-button v-if="flag != 'D'" size="large" :type="isNext ? 'hollow' : 'disabled'" @click.native="from('next', flag)">下一步</yd-button>
         <yd-button v-if="flag == 'C' || flag == 'D'" size="large" type="danger" @click.native="submit()">加入购物车</yd-button>
       </div>
     </yd-popup>
@@ -440,8 +440,8 @@
           'https://imageysc.kuaidiantong.cn/Storage/master/gallery/20170626/6363408724879089421601545.jpg'
         ],
         flag: '',
-        isOk: false,
         choosePopup: false,
+        isNext: false,
         isDisplay: 'none',
         currentIndex: 0,
         currentPrice: 0,
@@ -468,6 +468,7 @@
         if (come == 'prev') {  // 上一步
           this.currentIndex = flag === 'B' ? 0 : flag === 'C' ? 1 : flag === 'D' ? 2 : 3;
         } else {  // 下一步
+          this.isNext = false;
           this.currentIndex = flag === 'A' ? 1 : flag === 'B' ? 2 : flag === 'C' ? 3 : 0;
         }
         this.flag = this.currentIndex === 0 ? 'A' : this.currentIndex === 1 ? 'B' : this.currentIndex === 2 ? 'C' : 'D'; 
@@ -489,6 +490,7 @@
         this.sizeList = item.sizes;
         this.activeLabel = item.itemId;
         this.flag = form;
+        this.isNext = true;
       },
       clickColor(color) {
         this.activeColor = color;
@@ -497,16 +499,6 @@
       clickSize(size) {
         this.activeSize = size;
         console.log(size);
-      },
-      fn(label, key) {
-        if (key === 2 || key === 3) {
-          this.isOk = true;
-        } else {
-          this.isOk = false;
-        }
-      },
-      itemClick(key) {
-
       },
       // 监听show-product容器宽度
       handleResize() {
@@ -544,6 +536,7 @@
           mes: '提交',
           timeout: 1000
         });
+        this.currentStep = 4;
       }
     },
   }
@@ -552,16 +545,22 @@
 
 <style lang="less">
   body {
+    width: 100%;
+    max-width: 768px;
+    margin: 0 auto !important;
     overflow: hidden;
   }
 
   .product-container {
     .show-product {
+      width: 100%;
+      max-width: 768px;
+      height: 375px;
       position: fixed;
       top: 0;
-      left: 0;
+      left: 50%;
       right: 0;
-      height: 375px;
+      transform: translateX(-50%);
 
       &>div {
         height: 50%;

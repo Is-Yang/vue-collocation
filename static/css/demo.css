@@ -1,4 +1,7 @@
 body {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto !important;
   overflow: hidden;
 }
 
@@ -7,11 +10,14 @@ body {
 }
 
 .product-container .show-product {
+  width: 100%;
+  max-width: 768px;
+  height: 375px;
   position: fixed;
   top: 0;
-  left: 0;
+  left: 50%;
   right: 0;
-  height: 375px;
+  transform: translateX(-50%);
 }
 
 .product-container .show-product>div {
