@@ -458,11 +458,27 @@
       window.addEventListener('scroll', this.handleScroll, true);
     },
     created() {
+      this.init();
+
       setTimeout(() => {
         this.handleResize();
       }, 100);
     },
     methods: {
+      init() {
+        axios.get('/GetJson.aspx')
+        .then(function (response) {
+          if (response.status === 200 && data) {
+
+          }
+        })
+        .catch(function (error) {
+          this.$dialog.toast({
+            mes: error,
+            timeout: 1000
+          });
+        });
+      },
       from(come, flag) {
         this.$dialog.loading.open('正在加载');
         if (come == 'prev') {  // 上一步
