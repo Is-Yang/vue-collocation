@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/': {
-        target: 'http://z.jcmainweb.com/',
+        target: 'http://test.hzyctools.com',
         changeOrigin: true
       }
     },

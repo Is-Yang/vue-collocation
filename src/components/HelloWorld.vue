@@ -466,21 +466,22 @@
     },
     methods: {
       init() {
-        axios.get('/GetJson.aspx')
+        axios.get('/wap/auth_api/get_product_list_comb')
         .then(function (response) {
+          console.log(response)
           if (response.status === 200 && data) {
-
+            
           }
         })
         .catch(function (error) {
-          this.$dialog.toast({
+          Toast({
             mes: error,
             timeout: 1000
           });
         });
       },
       from(come, flag) {
-        this.$dialog.loading.open('正在加载');
+        Loading.open('正在加载');
         if (come == 'prev') {  // 上一步
           this.currentIndex = flag === 'B' ? 0 : flag === 'C' ? 1 : flag === 'D' ? 2 : 3;
         } else {  // 下一步
@@ -489,7 +490,7 @@
         }
         this.flag = this.currentIndex === 0 ? 'A' : this.currentIndex === 1 ? 'B' : this.currentIndex === 2 ? 'C' : 'D'; 
         this.currentStep = this.currentIndex;
-        this.$dialog.loading.close();
+        Loading.close();
       },
       clickItem(form, item) {
         if (form === 'A') {
