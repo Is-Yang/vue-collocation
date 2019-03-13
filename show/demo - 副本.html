@@ -18,8 +18,8 @@
 <body>
   <div id="app" v-cloak>
     <div class="product-container">
-      <!-- 产品图展示 -->
       <div class="show-product">
+        <!-- 产品图展示 -->
         <div>
           <div class="yd-grids-2">
             <span class="yd-grids-item">
@@ -38,24 +38,70 @@
             </span>
           </div>
         </div>
+
+        <!-- 步骤条 -->
+        <yd-step :current="currentStep">
+          <yd-step-item v-for="item in productItems" :key="item.cate_name">
+            <span slot="bottom">产品{{item.id}}</span>
+          </yd-step-item>
+        </yd-step>
       </div>
 
       <div class="product-main">
         <yd-cell-group>
-          <!-- 步骤条 -->
           <div class="choose-product">
-            <yd-cell-item arrow type="label" @click.native="choosePopup=true">
-              <span slot="left">选择产品规格</span>
-            </yd-cell-item>
-            <yd-step :current="currentStep">
-              <yd-step-item v-for="item in productItems" :key="item.cate_name">
-                <span slot="bottom">产品{{item.id}}</span>
-              </yd-step-item>
-            </yd-step>
+            <!-- 商品选择 -->
+            <div class="choose-main" v-if="productItems[currentIndex]">
+      
+              <div class="popup-body">
+      
+                <div class="product-info">
+                  <p>{{productItems[currentIndex].cate_name}}</p>
+                  <span class="price">￥{{currentPrice}}</span>
+                </div>
+      
+                <div class="product-label">
+                  <!-- 系列 如果系列里有数据才显示 -->
+                  <div class="mt-10" 
+                    v-for="series in productItems[currentIndex].cate_list" :key="series.id"
+                    v-if="series.shop_list.length > 0">
+                    <h3>{{series.cate_name}}</h3>
+                    <div>
+                      <span class="labelItem" v-for="item in series.shop_list" :key="item.id" @click="clickItem(productItems[currentIndex].id, item)"
+                        :class="{'active': item.id == activeLabel}">{{item.store_name}}</span>
+                    </div>
+                  </div>
+      
+                  <!-- 产品属性（颜色） -->
+                  <div class="mt-10" v-if="colorList.length > 0">
+                    <h3>{{colorList[0].attr_name}}</h3>
+                    <div>
+                      <span class="labelItem" v-for="vals in colorList[0].attr_values" @click="clickColor(vals)"
+                        :class="{'active': vals == activeColor}">{{vals}}</span>
+                    </div>
+                  </div>
+      
+                  <!-- 尺码 -->
+                  <div class="mt-10" v-if="sizeList.length != ''">
+                    <h3>尺码</h3>
+                    <div>
+                      <span class="labelItem" 
+                        v-for="(value, key, index) in sizeList" 
+                        :key="index" 
+                        @click="clickSize(key, value)" 
+                        :class="{'active': key == activeSize}">
+                          {{key}}
+                        </span>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 商品详情 -->
-          <div class="product-details">
+          <div class="product-details" v-if="productDetails">
             <yd-cell-item>
               <span slot="left">商品详情</span>
             </yd-cell-item>
@@ -64,59 +110,13 @@
         </yd-cell-group>
       </div>
 
-      <yd-popup v-model="choosePopup" position="bottom" height="60%" v-if="productItems[currentIndex]">
-        <div class="popup-head">产品{{productItems[currentIndex].id}}</div>
-
-        <div class="popup-body">
-
-          <div class="product-info">
-            <p>{{productItems[currentIndex].cate_name}}</p>
-            <span class="price">￥{{currentPrice}}</span>
-          </div>
-
-          <div class="product-label">
-            <!-- 系列 如果系列里有数据才显示 -->
-            <div class="mt-10" 
-              v-for="series in productItems[currentIndex].cate_list" :key="series.id"
-              v-if="series.shop_list.length > 0">
-              <h3>{{series.cate_name}}</h3>
-              <div>
-                <span class="labelItem" v-for="item in series.shop_list" :key="item.id" @click="clickItem(productItems[currentIndex].id, item)"
-                  :class="{'active': item.id == activeLabel}">{{item.store_name}}</span>
-              </div>
-            </div>
-
-            <!-- 产品属性（颜色） -->
-            <div class="mt-10" v-if="colorList.length > 0">
-              <h3>{{colorList[0].attr_name}}</h3>
-              <div>
-                <span class="labelItem" v-for="vals in colorList[0].attr_values" @click="clickColor(vals)"
-                  :class="{'active': vals == activeColor}">{{vals}}</span>
-              </div>
-            </div>
-
-            <!-- 尺码 -->
-            <div class="mt-10" v-if="sizeList.length != ''">
-              <h3>尺码</h3>
-              <div>
-                <span class="labelItem" 
-                  v-for="(value, key, index) in sizeList" 
-                  :key="index" 
-                  @click="clickSize(key, value)" 
-                  :class="{'active': key == activeSize}">
-                    {{key}}
-                  </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="popup-foot">
-          <yd-button v-if="flag != 1 && flag != ''" size="large" type="hollow" @click.native="from('prev', flag)">上一步</yd-button>
-          <yd-button v-if="flag != 4" size="large" :type="isNext ? 'hollow' : 'disabled'" @click.native="from('next', flag)">下一步</yd-button>
-          <yd-button v-if="flag == 3 || flag == 4" size="large" :type="isNext ? 'danger' : 'disabled'" type="danger" @click.native="submit()">加入购物车</yd-button>
-        </div>
-      </yd-popup>
+      <div class="product-foot">
+        <yd-button v-if="flag != 1 && flag != ''" size="large" type="hollow" @click.native="from('prev', flag)">上一步</yd-button>
+        <yd-button v-if="flag != 4" size="large" :type="isNext ? 'hollow' : 'disabled'" @click.native="from('next', flag)">下一步</yd-button>
+        <yd-button v-if="flag == 3 || flag == 4" size="large" 
+                  :type="(isNext || flag == 4) ? 'danger' : 'disabled'" 
+                  @click.native="submit()">加入购物车</yd-button>
+      </div>
 
       <a href="javascript:;" class="go-top" :style="{display: isDisplay}" @click="goTop()"></a>
     </div>
@@ -184,10 +184,6 @@
                       if (data.parentCates) {
                         this.productItems = data.parentCates;
                       }
-                      // 产品详情
-                      if (data.product_info) {
-                        this.productDetails = data.product_info.description;
-                      }
                     }
                   } else {
                     this.$dialog.loading.open('加载失败~');
@@ -204,20 +200,39 @@
           if (come == 'prev') { // 上一步
             this.currentIndex = flag === 2 ? 0 : flag === 3 ? 1 : flag === 4 ? 2 : 3;
           } else { // 下一步
-            this.isNext = false;
             this.currentIndex = flag === 1 ? 1 : flag === 2 ? 2 : flag === 3 ? 3 : 0;
+
+             let params = {
+              colorList: this.colorList,
+              sizeList: this.sizeList,
+              price: this.currentPrice,
+              image: this.image,
+              label: this.activeLabel,
+              color: this.activeColor,
+              size: this.activeSize,
+              productDetails: this.productDetails
+            }
+            // 如果为修改时
+            if (this.productState.length > this.currentIndex - 1) {
+              this.productState[this.currentIndex - 1] = params;
+
+              this.params.unique[this.currentIndex - 1] = this.unique;
+              this.params.productId[this.currentIndex - 1] = this.productId;
+            } else {
+              this.productState.push(params);
+              // 参数id
+              this.params.unique.push(this.unique);
+              this.params.productId.push(this.productId);
+            }
           }
 
-          console.log(this.productState)
+          if (this.productState[this.currentIndex] && this.productState[this.currentIndex].size) {
+              this.isNext = true;
+            } else {
+              this.isNext = false;
+            }
           
-          if (this.productState.length > this.currentIndex) {
-            this.colorList = this.productState[this.currentIndex].colorList;
-            this.sizeList = this.productState[this.currentIndex].sizeList;
-            this.currentPrice = this.productState[this.currentIndex].price;
-            this.activeLabel = this.productState[this.currentIndex].label;
-            this.activeColor = this.productState[this.currentIndex].color;
-            this.activeSize = this.productState[this.currentIndex].size;
-          } else {
+          if ((this.productState.length < this.currentIndex + 1) && come == 'next') {
             this.colorList = [];
             this.productValue = [];
             this.colorList = [];
@@ -225,6 +240,15 @@
             this.currentPrice = 0;
             this.activeColor = '';
             this.activeSize = '';
+            this.productDetails = '';
+          } else {
+            this.sizeList = this.productState[this.currentIndex].sizeList;
+            this.colorList = this.productState[this.currentIndex].colorList;
+            this.currentPrice = this.productState[this.currentIndex].price;
+            this.activeLabel = this.productState[this.currentIndex].label;
+            this.activeColor = this.productState[this.currentIndex].color;
+            this.activeSize = this.productState[this.currentIndex].size;
+            this.productDetails = this.productState[this.currentIndex].productDetails;
           }
 
           this.flag = this.currentIndex === 0 ? 1 : this.currentIndex === 1 ? 2 : this.currentIndex === 2 ? 3 : 4;
@@ -232,19 +256,34 @@
           this.$dialog.loading.close();
         },
         clickItem(form, item) {
-          this.colorList = item.productAttr;
+          if (this.productState.length < this.currentIndex + 1) {
+            this.colorList = item.productAttr;
+          } else {
+            this.colorList = this.productState[this.currentIndex].colorList;
+          }
           this.productValue = item.productValue;
           this.activeLabel = item.id;
-          this.params.productId.push(item.id);
+          this.productDetails = item.description;
+          this.productId = item.id;
+
+          this.activeColor = '';
+          this.activeSize = '';
+          this.sizeList = [];
+
           this.flag = form;
         },
         clickColor(attr) {
+          console.log(this.productState)
           this.activeColor = attr;
-          this.sizeList = this.productValue[attr];
-          
+          if (this.productState.length < this.currentIndex + 1) {
+            this.sizeList = this.productValue[attr];
+          } else {
+            this.sizeList = this.productState[this.currentIndex].sizeList;
+          }
         },
         clickSize(size, value) {
           this.activeSize = size;
+          
           if (this.flag === 1) {
             this.product.a = value.image;
           } else if (this.flag === 2) {
@@ -255,19 +294,9 @@
             this.product.d = value.image;
           }
           this.currentPrice = value.price;
+          this.image = value.image;
           this.isNext = true;
-          this.params.unique.push(value.unique);
-
-          let params = {
-            colorList: this.colorList,
-            sizeList: this.sizeList,
-            price: this.currentPrice,
-            image: value.image,
-            label: this.activeLabel,
-            color: this.activeColor,
-            size: this.activeSize
-          }
-          this.productState.push(params);
+          this.unique = value.unique;
         },
         fn(label, key) {
           if (key === 2 || key === 3) {
@@ -288,10 +317,9 @@
             showProduct.style.height = width + 'px';
 
             if (bodyProduct) {
-              bodyProduct.style.marginTop = width + 10 + 'px';
-              bodyProduct.style.height = height - width + 'px';
+              bodyProduct.style.marginTop = width + 5 + 'px';
+              bodyProduct.style.height = height - width - 50 + 'px';
             }
-
           }
         },
         handleScroll() {
