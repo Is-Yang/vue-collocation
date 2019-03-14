@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>vue-collocation</title>
+  <title>组合搭配</title>
   <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" name="viewport"/>
   <meta content="yes" name="apple-mobile-web-app-capable"/>
   <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
@@ -212,7 +212,7 @@
               this.product.d = shop.productValue_color[color].image;
             }
             this.productDetails = shop.description;
-            this.productValue = shop.productValue;
+            this.productValue = shop.productValue_color;
 
             // 根据当前的索引则判断上一步下一步是否启用
             this.flag = this.currentIndex === 0 ? 1 : this.currentIndex === 1 ? 2 : this.currentIndex === 2 ? 3 : 4;
@@ -291,7 +291,7 @@
           }
           
           // 当前系列下颜色的尺码以及图片，跟唯一值
-          this.productValue = item.productValue;
+          this.productValue = item.productValue_color;
 
           // 根据当前的id选中当前的状态
           this.activeLabel = item.id;
@@ -306,7 +306,7 @@
           
           let color = this.colorList[0].attr_values[0];
           this.activeColor = color;
-          this.sizeList = this.productValue[color];
+          this.sizeList = this.productValue[color].productValue;
 
 
           // 当前的四项产品唯一id（1,2,3,4）
@@ -315,32 +315,34 @@
         clickColor(attr) {
           // 根据当前的颜色值匹配来选中对应的状态
           this.activeColor = attr;
-          this.sizeList = this.productValue[attr];
+          this.sizeList = this.productValue[attr].productValue;
 
           if (this.productState.length < this.currentIndex + 1) {
-            this.sizeList = this.productValue[attr];
+            this.sizeList = this.productValue[attr].productValue;
           } else {
             this.sizeList = this.productState[this.currentIndex].sizeList;
           }
+          
+          // 根据当前的索引来匹配点击时值对应的图片所放的位置
+          if (this.flag === 1) {
+            this.product.a = this.productValue[attr].image;
+          } else if (this.flag === 2) {
+            this.product.b = this.productValue[attr].image;
+          } else if (this.flag === 3) {
+            this.product.c = this.productValue[attr].image;
+          } else if (this.flag === 4) {
+            this.product.d = this.productValue[attr].image;
+          }
+
+          // 当前价格
+          this.currentPrice = this.productValue[attr].price;
+          // 当前图片
+          this.image = this.productValue[attr].image;
         },
         clickSize(size, value) {
            // 根据当前的尺码值匹配来选中对应的状态
           this.activeSize = size;
-
-          // 根据当前的索引来匹配点击时值对应的图片所放的位置
-          if (this.flag === 1) {
-            this.product.a = value.image;
-          } else if (this.flag === 2) {
-            this.product.b = value.image;
-          } else if (this.flag === 3) {
-            this.product.c = value.image;
-          } else if (this.flag === 4) {
-            this.product.d = value.image;
-          }
-          // 当前价格
-          this.currentPrice = value.price;
-          // 当前图片
-          this.image = value.image;
+          
           // 当前的唯一值
           this.unique = value.unique;
           // 启用下一步
