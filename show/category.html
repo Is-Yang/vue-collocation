@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>组合搭配</title>
+  <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" name="viewport" />
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="telephone=no" name="format-detection" />
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/vue-ydui/dist/ydui.rem.css">
+  <link rel="stylesheet" href="./static/css/demo.css" />
+  <!-- 引入rem自适应类库 -->
+  <script src="https://unpkg.com/vue-ydui/dist/ydui.flexible.js"></script>
+  <!-- 数据请求 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+  <div id="category" v-cloak>
+    <div class="yd-scrolltab">
+      <div class="yd-scrolltab-nav">
+        <a href="javascript:;" class="yd-scrolltab-item"
+           v-for="(item, index) in navItem" :key="index" 
+           :class="{'yd-scrolltab-active': index == active}"
+           @click="queryData(index, item)">
+          <div class="yd-scrolltab-title">{{item.cate_name}}</div>
+        </a>
+      </div>
+      <div class="yd-scrolltab-content">
+        <yd-infinitescroll 
+          :callback="getList" 
+          :scroll-top="true"
+          ref="infinitescroll">
+            <yd-list slot="list">
+                <yd-list-item v-for="item, key in list" :key="key" @click.native="goTo(item.id)">
+                    <img slot="img" :src="item.image">
+                    <p slot="title">{{item.store_name}}</p>
+                    <yd-list-other slot="other">
+                        <div>
+                            <span class="price"><em>¥</em>{{item.price}}</span>
+                        </div>
+                        <div>已售：{{item.sales}}</div>
+                    </yd-list-other>
+                </yd-list-item>
+            </yd-list>
+    
+            <!-- 数据全部加载完毕显示 -->
+            <span slot="doneTip">加载完成</span>
+    
+            <!-- 加载中提示，不指定，将显示默认加载中图标 -->
+            <img slot="loadingTip" src="http://static.ydcss.com/uploads/ydui/loading/loading10.svg"/>
+        </yd-infinitescroll>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 引入 Vue -->
+  <script src="https://unpkg.com/vue"></script>
+  <!-- 引入组件库 -->
+  <script src="https://unpkg.com/vue-ydui/dist/ydui.rem.js"></script>
+  <script>
+    new Vue({
+      el: '#category',
+      data() {
+        return {
+          navItem: [],
+          list: [],
+          active: 0,
+          flag: false,
+          filter: {
+            page: 1,
+            pageSize: 10,
+          }
+        }
+      },
+      mounted() {
+        
+      },
+      created() {
+        this.init();
+      },
+      methods: {
+        queryData(index, item) {
+          this.active = index;
+          this.flag = true;
+          this.filter.id = item.id;
+          this.getList(this.filter);
+        },
+        getList(params = {}) {
+          Object.assign(this.filter, params);
+
+          if (this.flag) {
+              this.toSrollTop();
+          }
+
+          $.ajax('http://test.hzyctools.com/wap/public_api/get_product_list', {
+            data: {
+              id: this.filter.id,
+              page_num: this.flag ? 1 : this.filter.page,
+              page_size: this.filter.pageSize
+            },
+            dataType: 'jsonp',
+            crossDomain: true,
+            success: ((res) => {
+              if (res.code === 200) {
+                this.$dialog.loading.close();
+                let data = res.data;
+                if (data) {
+                  let _list = data.list;
+                  if (!this.flag) {
+                    this.list = [...this.list, ..._list];
+                    this.filter.page++;
+                  } else {
+                    this.list = _list;
+                    this.filter.page = 2;
+                    this.flag = false;
+                  }
+
+                  if (_list.length < this.filter.pageSize) {
+                      /* 所有数据加载完毕 */
+                      this.$refs.infinitescroll.$emit('ydui.infinitescroll.loadedDone');
+                      return;
+                  }
+                  /* 单次请求数据完毕 */
+                  this.$refs.infinitescroll.$emit('ydui.infinitescroll.finishLoad');
+                }
+              } else {
+                this.$dialog.loading.open('加载失败~');
+                setTimeout(() => {
+                  this.$dialog.loading.close();
+                }, 1000);
+              }
+            })
+          })  
+        },
+        toSrollTop(){
+          let scrollContent = document.getElementsByClassName('yd-scrolltab-content')[0];
+          return scrollContent.scrollTop = 0;
+        },
+        goTo(id) {
+          window.location.href = 'http://test.hzyctools.com/wap/store/detail/id/' + id;
+        },
+        init() {
+          this.$dialog.loading.open('正在加载');
+          $.ajax('http://test.hzyctools.com/wap/public_api/get_cate_list', {
+            dataType: 'jsonp',
+            crossDomain: true,
+            success: ((res) => {
+              if (res.code === 200) {
+                this.$dialog.loading.close();
+                let data = res.data;
+                if (data) {
+                  this.navItem = data.list;
+                  this.queryData(0, this.navItem[0]);
+                }
+              } else {
+                this.$dialog.loading.open('加载失败~');
+                setTimeout(() => {
+                  this.$dialog.loading.close();
+                }, 1000);
+              }
+            })
+          })
+        },
+       }
+    })
+
+  </script>
+</body>
+
+</html>
