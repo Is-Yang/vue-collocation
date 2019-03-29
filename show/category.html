@@ -21,12 +21,20 @@
   <div id="category" v-cloak>
     <div class="yd-scrolltab">
       <div class="yd-scrolltab-nav">
-        <a href="javascript:;" class="yd-scrolltab-item"
-           v-for="(item, index) in navItem" :key="index" 
-           :class="{'yd-scrolltab-active': index == active}"
-           @click="queryData(index, item)">
-          <div class="yd-scrolltab-title">{{item.cate_name}}</div>
-        </a>
+        <yd-accordion accordion>
+          <yd-accordion-item
+            v-for="(item, index) in navItem" 
+            :key="index" 
+            :title="item.cate_name"
+            :open="index == 0 ? true : false">
+              <a href="javascript:;" class="yd-scrolltab-item"
+                v-for="(cate, i) in item.sub_cate_list" :key="i" 
+                :class="{'yd-scrolltab-active': cate.id == active}" 
+                @click="queryData(cate)">
+                <div class="yd-scrolltab-title">{{cate.cate_name}}</div>
+              </a>   
+          </yd-accordion-item>
+        </yd-accordion>
       </div>
       <div class="yd-scrolltab-content">
         <yd-infinitescroll 
@@ -38,10 +46,12 @@
                     <img slot="img" :src="item.image">
                     <p slot="title">{{item.store_name}}</p>
                     <yd-list-other slot="other">
-                        <div>
-                            <span class="price"><em>¥</em>{{item.price}}</span>
-                        </div>
-                        <div>已售：{{item.sales}}</div>
+                        <span class="price"><em>¥</em>{{item.price}}</span>
+                        <span>已售：{{item.sales}}</span>
+                    </yd-list-other>
+                    <yd-list-other slot="other">
+                        <span>{{item.comment_count}}条评价</span>
+                        <span>{{item.fav_comment_rate}}%好评</span>
                     </yd-list-other>
                 </yd-list-item>
             </yd-list>
@@ -66,6 +76,7 @@
       data() {
         return {
           navItem: [],
+          show: true,
           list: [],
           active: 0,
           flag: false,
@@ -82,13 +93,15 @@
         this.init();
       },
       methods: {
-        queryData(index, item) {
-          this.active = index;
+        queryData(item) {
+          // this.navItem[0].sub_cate_list && this.navItem[0].sub_cate_list[0].id
+          this.active = item.id;
           this.flag = true;
           this.filter.id = item.id;
           this.getList(this.filter);
         },
         getList(params = {}) {
+          this.$dialog.loading.open('正在加载');
           Object.assign(this.filter, params);
 
           if (this.flag) {
@@ -153,7 +166,7 @@
                 let data = res.data;
                 if (data) {
                   this.navItem = data.list;
-                  this.queryData(0, this.navItem[0]);
+                  this.queryData(this.navItem[0].sub_cate_list && this.navItem[0].sub_cate_list[0]);
                 }
               } else {
                 this.$dialog.loading.open('加载失败~');
