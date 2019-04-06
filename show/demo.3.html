@@ -31,76 +31,83 @@
 
         <!-- 步骤条 -->
         <div class="product-step">
-            <yd-step theme="2" :current="currentIndex + 1" current-color="#ef4f4f">
-                <yd-step-item v-for="(item, index) in productData" :key="item.cate_name"
-                  @click.native="clickStep(index)">
-                    <span slot="top">产品{{index + 1}}</span>
-                    <span slot="bottom">{{index == 3 ? '(非必选)' : '(必选)'}}</span>
-                </yd-step-item>
-            </yd-step>
+          <yd-step :current="currentIndex + 1" current-color="#ef4f4f">
+            <!-- <yd-step-item v-for="item in productData" :key="item.cate_name"></yd-step-item> -->
+            <li class="yd-step-item"
+                v-for="(item, index) in productData" :key="item.cate_name"
+                :class="{'yd-step-item-current' : currentIndex >= index}">
+                <em><i>{{index + 1}}</i></em>
+            </li>
+          </yd-step>
         </div>
       </div>
 
       <div class="product-main">
-          <div class="choose-product" v-if="currentIndex === index" v-for="(data, index) in productData">
+        <yd-cell-group>
+          <div class="choose-product" v-show="currentIndex === index" v-for="(data, index) in productData">
             <!-- 商品选择 -->
             <div class="choose-main">
 
               <div class="popup-body">
 
-                <!-- 产品名&&产品价格 -->
                 <div class="product-info">
                   <p>{{data.cate_name}}</p>
-                  <span class="price">￥{{active.price[currentIndex]}}</span>
+                  <span class="price">￥{{product.price}}</span>
                 </div>
 
-                <div class="product-label">
-                  <!-- 产品（系列） -->
-                  <div v-for="cate in data.cate_list" 
+                <yd-tab class="product-label" v-model="tab[index]">
+                  <yd-tab-panel v-for="cate in data.cate_list" 
                     :key="cate.id" 
-                    :label="cate.cate_name" class="mt-10">
-                      <h3>{{cate.cate_name}}</h3>
+                    :label="cate.cate_name">
+                    <div class="mt-10">
+                      <h3>系列</h3>
                       <div v-for="shop in cate.shop_list" :key="shop.id">
                         <span class="labelItem"
                           @click="clickSeries(currentIndex, shop)"
-                          :class="{'active': shop.id == active.series[currentIndex]}">{{shop.store_name}}</span>
+                          :class="{'active': shop.id == active.series}">{{shop.store_name}}</span>
+
+                          <div class="mt-10">
+                              <h3>颜色</h3>
+                              <div>
+                                <span class="labelItem" 
+                                  v-for="(vals, key) in shop.productValue_color"
+                                  @click="clickColor(vals, key)"
+                                  :class="{'active': key == active.color}" >{{key}}</span>
+                              </div>
+                          </div>
+
+                          <div class="mt-10">
+                              <h3>尺码</h3>
+                              <div>
+                                <span class="labelItem" 
+                                  v-for="(vals, key) in list.size"
+                                  @click="clickSize(key)" 
+                                  :class="{'active': key == active.size}">{{key}}{{vals.unique}}</span>
+                              </div>
+                          </div>
                       </div>
-                  </div>
-
-                   <!-- 产品（颜色） -->
-                   <div class="mt-10" v-if="list.color && list.color.length != 0">
-                    <h3>颜色</h3>
-                    <div>
-                      <span class="labelItem" v-for="(vals, key) in list.color" @click="clickColor(vals)" 
-                        :class="{'active': vals.unique == active.color[currentIndex]}">
-                        {{key}}
-                      </span>
                     </div>
-                  </div>
-
-                  <!-- 尺码 -->
-                  <div class="mt-10" v-if="currentIndex == 0 && list.size && list.size.length != 0">
-                    <h3>尺码</h3>
-                    <div>
-                      <span class="labelItem" v-for="(vals, key) in list.size" @click="clickSize(key)" :class="{'active': key == active.size}">{{key}}</span>
-                    </div>
-                  </div>
-                </div>
+                  </yd-tab-panel>
+                </yd-tab>
                 
               </div>
             </div>
-            <!-- 商品详情 -->
-            <div class="product-details" v-if="product.detailImg">
-              <yd-cell-item>
-                <span slot="left">商品详情</span>
-              </yd-cell-item>
-              <div class="details-img" v-html="product.detailImg"></div>
-            </div>
           </div>
+          <!-- 商品详情 -->
+          <div class="product-details" v-if="product.detailImg">
+            <yd-cell-item>
+              <span slot="left">商品详情</span>
+            </yd-cell-item>
+            <div class="details-img" v-html="product.detailImg"></div>
+          </div>
+        </yd-cell-group>
       </div>
 
       <div class="product-foot">
-        <yd-button v-if="currentIndex == 2 || currentIndex == 3" size="large" type="danger" @click.native="submit()">加入购物车</yd-button>
+        <yd-button v-if="currentIndex != 0" size="large" type="hollow" @click.native="from('prev', currentIndex)">上一步</yd-button>
+        <yd-button v-if="currentIndex != 3" size="large" :type="isNext ? 'hollow' : 'disabled'" @click.native="from('next', currentIndex)">下一步</yd-button>
+        <yd-button v-if="currentIndex == 2 || currentIndex == 3" size="large" :type="(isNext || currentIndex == 3) ? 'danger' : 'disabled'"
+          @click.native="submit()">加入购物车</yd-button>
       </div>
 
       <a href="javascript:;" class="go-top" v-if="isDisplay" @click="goTop()"></a>
@@ -121,17 +128,17 @@
             b: "./static/image/b.png",
             c: "./static/image/c.png",
             d: "./static/image/d.png",
+            price: 0, // 产品价格
             detailImg: '', // 详情图
           },
-          isDisplay: false,
+          tab: [0, 0, 0, 0],
           productData: [], // 数据集
           currentIndex: 0, // 当前数据集的索引
-          flag: 0,
-          flag1: 0,
+          isDisplay: false, // 回到顶部的图标是否显示
+          isNext: false, // 是否下一步
           active: { // 选中的状态
-            price: [0, 0, 0, 0], // 产品价格
-            series: [,,,], // 系列
-            color: [,,,], // 颜色
+            series: '', // 系列
+            color: '', // 颜色
             size: '', // 尺码
           },
           list: { // 数据列表
@@ -157,11 +164,56 @@
         }, 100);
       },
       methods: {
-        clickStep(index) {
-          this.currentIndex = index;
-          this.initData();
+        from(come, flag) {
+          if (come == 'prev') { // 上一步
+            this.currentIndex = flag === 1 ? 0 : flag === 2 ? 1 : flag === 3 ? 2 : 3;
+          } else { // 下一步
+            this.currentIndex = flag === 0 ? 1 : flag === 1 ? 2 : flag === 2 ? 3 : 0;
+            let params = {
+              colorList: this.list.color,
+              sizeList: this.list.size,
+              price: this.product.price,
+              image: this.image,
+              series: this.active.series,
+              color: this.active.color,
+              size: this.active.size,
+              detailImg: this.product.detailImg,
+              unique: this.params.unique, // 属性组合的唯一id
+              productId: this.params.productId, // 多个商品的组合id
+              tab: this.tab[this.currentIndex]
+            }
+            // 如果为修改时 则找到当前索引并重新复制
+            if (this.productState.length > this.currentIndex - 1) {
+              this.productState[this.currentIndex - 1] = params;
+            } else { // 添加
+              this.productState.push(params);
+            }
+          }
+
+          // 是否选择了最后一项尺码，如果选择了则启用下一步
+          if (this.productState[this.currentIndex] && this.productState[this.currentIndex].size) {
+            this.isNext = true;
+          } else {
+            this.isNext = false;
+          }
+
+          // 当前保存的数据值长度 小于当前索引时 并且为下一步时清空选中的状态，与清空数据值
+          if ((this.productState.length < this.currentIndex + 1) && come == 'next') {
+            this.initData();
+          } else { // 否则则查找当前索引的数据值，与选中的状态
+            this.list.size = this.productState[this.currentIndex].sizeList;
+            this.list.color = this.productState[this.currentIndex].colorList;
+            this.product.price = this.productState[this.currentIndex].price;
+            this.active.series = this.productState[this.currentIndex].series;
+            this.active.color = this.productState[this.currentIndex].color;
+            this.active.size = this.productState[this.currentIndex].size;
+            this.product.detailImg = this.productState[this.currentIndex].detailImg;
+          }
         },
         clickSeries(index, shop) {
+          // 系列选中状态
+          this.active.series = shop.id;
+
           // 保存系列下颜色内的数据值
           this.productValue = shop.productValue_color;
 
@@ -169,15 +221,18 @@
           this.list.color = this.productValue;
           // 默认获取第一个颜色
           let color = Object.keys(this.list.color)[0];
-
           // 选中第一个颜色值
-          this.active.color[this.currentIndex] = this.productValue[color].unique;
+          this.active.color = color;
 
-          // 设置产品图与价格
-          this.setProduct(this.productValue[color]);
-
-          // 当前颜色下的尺码
+          // 默认当前颜色下的尺码
           this.list.size = this.productValue[color].productValue;
+
+          // 否则清空尺码选中的状态
+          this.active.size = '';
+
+          // 禁止下一步
+          this.isNext = false;
+
 
           // 产品详情图
           this.product.detailImg = shop.description;
@@ -185,36 +240,12 @@
           // 当前索引
           this.currentIndex = index;
 
-          if (this.flag > 0 && this.active.series[this.currentIndex] == shop.id) {
-            this.active.series[this.currentIndex] = undefined;
-            this.active.price[this.currentIndex] = 0;
-          } else {
-            this.active.series[index] = shop.id;
-            this.flag++;
-          }
-
-          this.$forceUpdate();
+          this.forParams();
 
         },
-        clickColor (vals, key) {
+        clickColor(vals, key) {
           // 颜色选中状态
-          if (this.flag1 > 0 && this.active.color[this.currentIndex] == vals.unique) {
-            this.active.color[this.currentIndex] = undefined;
-          } else {
-            this.active.color[this.currentIndex] = vals.unique;
-            this.flag1++;
-          }
-
-          this.$forceUpdate();
-          this.setProduct(vals);
-
-        },
-        clickSize (key) {
-          // 尺码选中状态
-          this.active.size = key;
-
-        },
-        setProduct(vals) {
+          this.active.color = key;
           // 根据当前的索引来匹配点击时值对应的图片所放的位置
           if (this.currentIndex === 0) {
             this.product.a = vals.image;
@@ -225,33 +256,43 @@
           } else if (this.currentIndex === 3) {
             this.product.d = vals.image;
           }
-          // 价格
-          this.active.price[this.currentIndex] = vals.price;
-          // 图片
-          this.product.image = vals.image;
+
+          // 当前价格
+          this.product.price = vals.price;
+          // 当前图片
+          this.image = vals.image;
+
+          this.list.size = vals.productValue;
+
+          this.forParams();
+
         },
-        // 获取当前索引的初始化数据
-        initData() {
-          let data = this.productData[this.currentIndex];
-          let cate_list = {};
-          for (let index = 0; index < data.cate_list.length; index++) {
-            if (data.cate_list[index].shop_list.length > 0) {
-              cate_list = data.cate_list[index];
-            }
-            break;
-          }
+        clickSize(key) {
+          // 尺码选中状态
+          this.active.size = key;
+          // 启用下一步
+          this.isNext = true;
 
-          if (cate_list.shop_list && cate_list.shop_list[0]) {
-            let shop = cate_list.shop_list[0];
+          // 标记是否点了最后选择项（尺码）
+          this.isLast = this.currentIndex === 3 ? true : false;
 
-            this.list.color = shop.productValue_color;
-            this.product.detailImg = shop.description;
-         
-            // 当前颜色下的尺码
-            let color = Object.keys(this.list.color)[0];
-            this.list.size = shop.productValue_color[color].productValue;
-            // this.clickSeries(this.currentIndex, shop);
+          this.forParams();
+        },
+        forParams() {
+          // 产品组合id，用于加入购物车时
+          this.params.productId = this.active.series;
+          // 组合的唯一id
+          let unique = ''; 
+
+          // 如果有数据值
+          if (this.productState.length > this.currentIndex) {
+            let productValue = this.productState[this.currentIndex].colorList;
+            unique = this.active.size ? productValue[this.active.color].productValue[this.active.size].unique : '';
+          } else {
+            unique = this.active.size ? this.productValue[this.active.color].productValue[this.active.size].unique : '';
           }
+          this.params.unique = unique;
+
         },
         init() {
           this.$dialog.loading.open('正在加载');
@@ -278,42 +319,7 @@
             })
           })
         },
-        verify() {
-          for (let i = 0; i < this.active.series.length; i++) {
-            const ele = this.active.series[i];
-            if (ele == undefined) {
-              this.$dialog.toast({
-                mes: '请到产品'+ (i + 1) +'中选择系列',
-                timeout: 1000
-              });
-              return false;
-            }
-          }
-
-          for (let i = 0; i < this.active.color.length; i++) {
-            const ele = this.active.color[i];
-            if (ele == undefined) {
-              this.$dialog.toast({
-                mes: '请到产品'+ (i + 1) +'中选择颜色',
-                timeout: 1000
-              });
-              return false;
-            }
-          }
-
-          if (this.active.size == '') {
-            this.$dialog.toast({
-              mes: '请到产品1中选择尺码',
-              timeout: 1000
-            });
-            return false;
-          } 
-          return true;
-        },
         submit() {
-          if (!this.verify()) {
-            return;
-          }
           this.$dialog.loading.open('正在添加');
           /*
             立即购买
@@ -333,11 +339,30 @@
             http://test.hzyctools.com/wap/auth_api/set_cart/cartNum/1/uniqueId/658abcc1/productId/4
           */
 
+          // 定义提交所需的参数数组
+          let uniqueList = [];
+          let productList = [];
+
+          this.productState.forEach(ele => {
+            uniqueList.push(ele.unique);
+            productList.push(ele.productId);
+          });
+
+          //  加入购物车 最后选择时的数据
+          uniqueList.push(this.unique);
+          productList.push(this.productId);
+
+          // 如果是到了第四步并未选择商品
+          if (!this.isLast && this.currentIndex === 3) {
+            uniqueList = uniqueList.slice(0, -1);
+            productList = productList.slice(0, -1);
+          }
+
           $.ajax('http://test.hzyctools.com/wap/auth_api/set_cart_comb', {
             data: {
               cartNum: 1,
-              unique:  this.active.color.join(','),
-              productId: this.active.series.join(','),
+              unique:  uniqueList.join(','),
+              productId: productList.join(','),
               is_comb: 1,
             },
             dataType: 'jsonp',
@@ -360,6 +385,20 @@
               }
             })
           })
+        },
+        initData() {
+          let data = this.productData[this.currentIndex];
+          let cate_list = {};
+          for (let index = 0; index < data.cate_list.length; index++) {
+            if (data.cate_list[index].shop_list.length > 0) {
+              cate_list = data.cate_list[index];
+            }
+            break;
+          }
+          if (cate_list.shop_list && cate_list.shop_list[0]) {
+            let shop = cate_list.shop_list[0];
+            this.clickSeries(this.currentIndex, shop);
+          }
         },
         // 监听show-product容器宽度 并固定高度为屏幕宽度的1.6
         handleResize() {

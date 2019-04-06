@@ -30,7 +30,7 @@ img {
 }
 
 .product-container .show-product .product-image {
-  height: calc(100% - 60px);
+  height: calc(100% - 85px);
   position: relative;
   display: flex;
   justify-content: center;
@@ -68,24 +68,37 @@ img {
 
 .product-container .show-product .product-step {
   margin-top: 5px;
-  height: 55px;
-  padding: 5px 0;
+  padding-top: 3px;
+  height: 80px;
   background-color: #fff;
   border-top: 1px solid #f0f0f0;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.product-container .show-product .product-step .yd-step-content {
-  margin-left: -24px;
+.yd-step-theme2 {
+  font-size: 12px;
 }
-.yd-step-theme1 .yd-step-item>em{
+.yd-step-theme2 .yd-step-item-top-text>span {
+  color: #333;
+}
+.yd-step-theme2 .yd-step-item-bottom {
+  color: #989898;
+}
+.yd-step-theme2 .yd-step-item-bottom {
+  top: 10px;
+}
+
+/* .product-container .show-product .product-step .yd-step-content {
+  margin-left: -24px;
+} */
+/* .yd-step-theme1 .yd-step-item>em{
   width: 42px;
   height: 40px;
   line-height: 40px;
   font-size: 12px;
-}
+} */
 
-.show-product .product-step .yd-step-item>em:not(.yd-step-checkmark)::before {
+/* .show-product .product-step .yd-step-item>em:not(.yd-step-checkmark)::before {
   content: '产品';
   color: #fff;
 }
@@ -97,12 +110,12 @@ img {
   border: 2px solid #fff;
   border-top: 0;
   border-left: 0;
-}
-.yd-step-theme1 .yd-step-item:not(:first-child):before {
+} */
+/* .yd-step-theme1 .yd-step-item:not(:first-child):before {
   width: 42%;
   left: -8%;
   top: 10px;
-}
+} */
 
 .product-container .show-product>div .yd-grids-2 {
   height: 50%;
