@@ -9,10 +9,13 @@
   <meta content="black" name="apple-mobile-web-app-status-bar-style" />
   <meta content="telephone=no" name="format-detection" />
   <!-- 引入样式 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/driver.js/0.9.5/driver.min.css">
   <link rel="stylesheet" href="https://unpkg.com/vue-ydui/dist/ydui.rem.css">
   <link rel="stylesheet" href="./static/css/demo.css" />
+
   <!-- 引入rem自适应类库 -->
   <script src="https://unpkg.com/vue-ydui/dist/ydui.flexible.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/driver.js/0.9.5/driver.min.js"></script>
   <!-- 数据请求 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
@@ -33,7 +36,7 @@
         <div class="product-step">
             <yd-step theme="2" :current="currentIndex + 1" current-color="#ef4f4f">
                 <yd-step-item v-for="(item, index) in productData" :key="item.cate_name"
-                  @click.native="clickStep(index)">
+                  @click.native="clickStep(index)" :class="{'yd-step-item-current' : currentIndex >= index}">
                     <span slot="top">产品{{index + 1}}</span>
                     <span slot="bottom">{{index == 3 ? '(非必选)' : '(必选)'}}</span>
                 </yd-step-item>
@@ -105,6 +108,7 @@
 
       <a href="javascript:;" class="go-top" v-if="isDisplay" @click="goTop()"></a>
     </div>
+    
   </div>
   
   <!-- 引入 Vue -->
@@ -144,6 +148,7 @@
           },
           productValue: {},
           productState: [], // 数据的状态，用于存储上一步下一步的数据
+          driver: null
         }
       },
       mounted() {
@@ -154,9 +159,59 @@
         this.init();
         setTimeout(() => {
           this.handleResize();
+          this.driver = new Driver(
+            {
+              allowClose: false,
+              opacity: 0,
+              doneBtnText: '完成', // Text on the final button
+              closeBtnText: '跳过', // Text on the close button for this step
+              nextBtnText: '下一步', // Next button text for this step
+              prevBtnText: '上一步'
+            }
+          )
+          this.guide();
         }, 100);
       },
       methods: {
+        guide() {
+          const steps = [
+            {
+              element: '.imgA',
+              popover: {
+                title: '杯底',
+                description: '必选，从产品1中选择',
+                position: 'bottom'
+              }
+            },
+            {
+              element: '.imgB',
+              popover: {
+                title: '杯身',
+                description: '必选，从产品2中选择',
+                position: 'bottom'
+              }
+            },
+            {
+              element: '.imgC',
+              popover: {
+                title: '杯盖',
+                description: '必选，从产品3中选择, 选择后可加入购物车',
+                position: 'bottom'
+              }
+            },
+            {
+              element: '.imgD',
+              popover: {
+                title: '配件',
+                description: '非必选，从产品4中选择',
+                position: 'bottom'
+              }
+            }
+          ]
+
+          this.driver.defineSteps(steps)
+          this.driver.start()
+        },
         clickStep(index) {
           this.currentIndex = index;
           this.initData();
@@ -188,6 +243,7 @@
           if (this.flag > 0 && this.active.series[this.currentIndex] == shop.id) {
             this.active.series[this.currentIndex] = undefined;
             this.active.price[this.currentIndex] = 0;
+            this.active.color[this.currentIndex] = undefined;
           } else {
             this.active.series[index] = shop.id;
             this.flag++;
