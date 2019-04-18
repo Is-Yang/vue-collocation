@@ -63,8 +63,9 @@
                     :key="cate.id" 
                     :label="cate.cate_name" class="mt-10">
                       <h3>{{cate.cate_name}}</h3>
-                      <div v-for="shop in cate.shop_list" :key="shop.id">
+                      <div>
                         <span class="labelItem"
+                          v-for="shop in cate.shop_list" :key="shop.id"
                           @click="clickSeries(currentIndex, shop)"
                           :class="{'active': shop.id == active.series[currentIndex]}">{{shop.store_name}}</span>
                       </div>
