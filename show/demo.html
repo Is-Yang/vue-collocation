@@ -167,7 +167,10 @@
               doneBtnText: '完成', // Text on the final button
               closeBtnText: '跳过', // Text on the close button for this step
               nextBtnText: '下一步', // Next button text for this step
-              prevBtnText: '上一步'
+              prevBtnText: '上一步',
+              onReset: (ele)=> {
+                this.product.d = '';
+              }
             }
           )
           this.guide();
@@ -204,8 +207,11 @@
               element: '.imgD',
               popover: {
                 title: '饰品',
-                description: '非必选，从产品4中选择',
+                description: '非必选，从产品4中选择，若不想选择产品4，可再次点击取消当前选择',
                 position: 'bottom'
+              },
+              onNext: ()=> {
+                this.product.d = '';
               }
             }
           ]
@@ -245,6 +251,9 @@
             this.active.series[this.currentIndex] = undefined;
             this.active.price[this.currentIndex] = 0;
             this.active.color[this.currentIndex] = undefined;
+            if (this.currentIndex == 3) {
+              this.product.d = ''
+            }
           } else {
             this.active.series[index] = shop.id;
             this.flag++;
